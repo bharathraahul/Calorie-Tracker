@@ -1,5 +1,6 @@
 import { prisma } from "@/prisma/prisma";
 import bcrypt from "bcryptjs";
+import { request } from "http";
 import jwt from "jsonwebtoken"
 
 export async function POST(request: Request){
@@ -45,7 +46,22 @@ export async function Login(request: Request, response: Response){
     return Response.json({message:"Invalid email or password"},{status:401})
 }
 
-export async function Logout(request: Request, response: Response){
+export async function verifyToken(request:Request){
 
+    const authHeader  = request.headers.get("authorization")
+
+    if (!authHeader){
+        throw new Error("Missing Authorization Header")
+    }
+
+    const authToken = authHeader.split(" ")[1]
+
+    try{
+        const decoded = jwt.verify(authToken,process.env.JWT_SECRET!)
+        return decoded
+
+    }catch{
+        throw new Error("Invalid or expired token")
+    }
 
 }
